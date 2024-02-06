@@ -37,10 +37,13 @@ class SchoolSchedule:
         print(f"Предмет {name} додано успішно.")
 
     def add_teacher(self, name, subject_name):
-        subject = Subject.objects.get(name=subject_name)
-        teacher = Teacher(name=name, subject=subject)
-        teacher.save()
-        print(f"Вчителя {name} додано успішно.")
+        try:
+            subject = Subject.objects.get(name=subject_name)
+            teacher = Teacher(name=name, subject=subject)
+            teacher.save()
+            print(f"Вчителя {name} додано успішно.")
+        except Subject.DoesNotExist:
+            print(f"Предмет {subject_name} не знайдений.")
 
     def add_class(self, name):
         class_obj = Class(name=name)
@@ -48,10 +51,13 @@ class SchoolSchedule:
         print(f"Клас {name} додано успішно.")
 
     def add_student(self, name, class_name):
-        class_obj = Class.objects.get(name=class_name)
-        student = Student(name=name, class_name=class_obj)
-        student.save()
-        print(f"Учня {name} додано успішно.")
+        try:
+            class_obj = Class.objects.get(name=class_name)
+            student = Student(name=name, class_name=class_obj)
+            student.save()
+            print(f"Учня {name} додано успішно.")
+        except Class.DoesNotExist:
+            print(f"Клас {class_name} не знайдений.")
 
     def display_teacher_schedule(self, teacher_name):
         try:
@@ -77,6 +83,13 @@ class SchoolSchedule:
         subject_name = input("Введіть назву предмету: ")
         class_name = input("Введіть назву класу: ")
         day = input("Введіть день (наприклад, Понеділок): ")
+
+        # Додайте перевірку на коректність дня тижня
+        valid_days = ["Понеділок", "Вівторок", "Середа", "Четвер", "П'ятниця"]
+        if day not in valid_days:
+            print("Неправильний день тижня. Введіть коректний день (Понеділок до П'ятниці).")
+            return
+
         time = input("Введіть час (наприклад, 10:00): ")
 
         try:
@@ -97,79 +110,87 @@ class SchoolSchedule:
     def add_student_schedule(self, student_name):
         subject_name = input("Введіть назву предмету: ")
         day = input("Введіть день (наприклад, Понеділок): ")
+
+        # Додайте перевірку на коректність дня тижня
+        valid_days = ["Понеділок", "Вівторок", "Середа", "Четвер", "П'ятниця"]
+        if day not in valid_days:
+            print("Неправильний день тижня. Введіть коректний день (Понеділок до П'ятниці).")
+            return
+
         time = input("Введіть час (наприклад, 10:00): ")
+
         try:
-                    student = Student.objects.get(name=student_name)
-                    subject = Subject
-                    object.get(name=subject_name)
-                    lesson = Lesson(student=student, subject=subject, day=day, time=time)
-                    lesson.save()
-                    print("Розклад уроку додано успішно.")
+            student = Student.objects.get(name=student_name)
+            subject = Subject.objects.get(name=subject_name)
+
+            lesson = Lesson(student=student, subject=subject, day=day, time=time)
+            lesson.save()
+            print("Розклад уроку додано успішно.")
         except Student.DoesNotExist:
             print(f"Учень {student_name} не знайдений.")
         except Subject.DoesNotExist:
             print(f"Предмет {subject_name} не знайдений.")
 
-def display_main_menu(self):
-    print("\nГоловне меню:")
-    print("1. Відображення Предметів")
-    print("2. Відображення Вчителів")
-    print("3. Відображення Класів")
-    print("4. Відображення Учнів")
-    print("5. Додати предмет")
-    print("6. Додати вчителя")
-    print("7. Додати клас")
-    print("8. Додати учня")
-    print("9. Переглянути розклад для вчителя")
-    print("10. Додати розклад для вчителя")
-    print("11. Переглянути розклад для учня")
-    print("12. Додати розклад для учня")
-    print("13. Вихід")
+    def display_main_menu(self):
+        print("\nГоловне меню:")
+        print("1. Відображення Предметів")
+        print("2. Відображення Вчителів")
+        print("3. Відображення Класів")
+        print("4. Відображення Учнів")
+        print("5. Додати предмет")
+        print("6. Додати вчителя")
+        print("7. Додати клас")
+        print("8. Додати учня")
+        print("9. Переглянути розклад для вчителя")
+        print("10. Додати розклад для вчителя")
+        print("11. Переглянути розклад для учня")
+        print("12. Додати розклад для учня")
+        print("13. Вихід")
 
-def main_menu(self):
-    while True:
-        self.display_main_menu()
-        choice = input("Введіть свій вибір (1-13): ")
+    def main_menu(self):
+        while True:
+            self.display_main_menu()
+            choice = input("Введіть свій вибір (1-13): ")
+            if choice == "1":
+                self.display_subjects()
+            elif choice == "2":
+                self.display_teachers()
+            elif choice == "3":
+                self.display_classes()
+            elif choice == "4":
+                self.display_students()
+            elif choice == "5":
+                name = input("Введіть назву предмету: ")
+                self.add_subject(name)
+            elif choice == "6":
+                name = input("Введіть ім'я вчителя: ")
+                subject_name = input("Введіть назву предмету, який викладає вчитель: ")
+                self.add_teacher(name, subject_name)
+            elif choice == "7":
+                name = input("Введіть назву класу: ")
+                self.add_class(name)
+            elif choice == "8":
+                name = input("Введіть ім'я учня: ")
+                class_name = input("Введіть назву класу, до якого належить учень: ")
+                self.add_student(name, class_name)
+            elif choice == "9":
+                teacher_name = input("Введіть ім'я вчителя: ")
+                self.display_teacher_schedule(teacher_name)
+            elif choice == "10":
+                teacher_name = input("Введіть ім'я вчителя: ")
+                self.add_teacher_schedule(teacher_name)
+            elif choice == "11":
+                student_name = input("Введіть ім'я учня: ")
+                self.display_student_schedule(student_name)
+            elif choice == "12":
+                student_name = input("Введіть ім'я учня: ")
+                self.add_student_schedule(student_name)
+            elif choice == "13":
+                print("Вихід з програми. До побачення!")
+                break
+            else:
+                print("Невірний вибір. Будь ласка, введіть число від 1 до 13.")
 
-        if choice == "1":
-            self.display_subjects()
-        elif choice == "2":
-            self.display_teachers()
-        elif choice == "3":
-            self.display_classes()
-        elif choice == "4":
-            self.display_students()
-        elif choice == "5":
-            name = input("Введіть назву предмету: ")
-            self.add_subject(name)
-        elif choice == "6":
-            name = input("Введіть ім'я вчителя: ")
-            subject_name = input("Введіть назву предмету, який викладає вчитель: ")
-            self.add_teacher(name, subject_name)
-        elif choice == "7":
-            name = input("Введіть назву класу: ")
-            self.add_class(name)
-        elif choice == "8":
-            name = input("Введіть ім'я учня: ")
-            class_name = input("Введіть назву класу, до якого належить учень: ")
-            self.add_student(name, class_name)
-        elif choice == "9":
-            teacher_name = input("Введіть ім'я вчителя: ")
-            self.display_teacher_schedule(teacher_name)
-        elif choice == "10":
-            teacher_name = input("Введіть ім'я вчителя: ")
-            self.add_teacher_schedule(teacher_name)
-        elif choice == "11":
-            student_name = input("Введіть ім'я учня: ")
-            self.display_student_schedule(student_name)
-        elif choice == "12":
-            student_name = input("Введіть ім'я учня: ")
-            self.add_student_schedule(student_name)
-        elif choice == "13":
-            print("Вихід з програми. До побачення!")
-            break
-        else:
-            print("Невірний вибір. Будь ласка, введіть число від 1 до 13.")
 if __name__ == "__main__":
     school_schedule = SchoolSchedule()
     school_schedule.main_menu()
