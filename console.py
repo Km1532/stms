@@ -31,17 +31,23 @@ class SchoolSchedule:
         for student in students:
             print(f"- {student}")
 
-    def add_subject(self, name):
-        subject = Subject(name=name)
-        subject.save()
-        print(f"Предмет {name} додано успішно.")
+    def display_subjects(self):
+        subjects = Subject.objects.all()
+        print("Предмети:")
+        for subject in subjects:
+            print(f"- {subject.name}")
 
     def add_teacher(self, name, subject_name):
         try:
-            subject = Subject.objects.get(name=subject_name)
-            teacher = Teacher(name=name, subject=subject)
-            teacher.save()
-            print(f"Вчителя {name} додано успішно.")
+            subjects = Subject.objects.filter(name=subject_name)
+
+            if subjects.exists():
+                subject = subjects.first()
+                teacher = Teacher(name=name, subject=subject)
+                teacher.save()
+                print(f"Вчителя {name} додано успішно.")
+            else:
+                print(f"Предмет {subject_name} не знайдений або існує кілька предметів з такою назвою.")
         except Subject.DoesNotExist:
             print(f"Предмет {subject_name} не знайдений.")
 
@@ -72,7 +78,7 @@ class SchoolSchedule:
     def display_student_schedule(self, student_name):
         try:
             student = Student.objects.get(name=student_name)
-            lessons = Lesson.objects.filter(class_obj=student.class_name)
+            lessons = Lesson.objects.filter(student=student)
             print(f"\nРозклад уроків для учня {student_name} (клас {student.class_name}):")
             for lesson in lessons:
                 print(f"- {lesson}")
@@ -80,56 +86,47 @@ class SchoolSchedule:
             print(f"Учень {student_name} не знайдений.")
 
     def add_teacher_schedule(self, teacher_name):
-        subject_name = input("Введіть назву предмету: ")
-        class_name = input("Введіть назву класу: ")
-        day = input("Введіть день (наприклад, Понеділок): ")
-
-        # Додайте перевірку на коректність дня тижня
-        valid_days = ["Понеділок", "Вівторок", "Середа", "Четвер", "П'ятниця"]
-        if day not in valid_days:
-            print("Неправильний день тижня. Введіть коректний день (Понеділок до П'ятниці).")
-            return
-
-        time = input("Введіть час (наприклад, 10:00): ")
-
         try:
             teacher = Teacher.objects.get(name=teacher_name)
-            subject = Subject.objects.get(name=subject_name)
-            class_obj = Class.objects.get(name=class_name)
+            self.display_teacher_schedule(teacher_name)
+            subject_name = input("Введіть назву предмету: ")
+            day = input("Введіть день (наприклад, Понеділок): ")
+            time = input("Введіть час (наприклад, 10:00): ")
 
-            lesson = Lesson(teacher=teacher, subject=subject, class_obj=class_obj, day=day, time=time)
-            lesson.save()
-            print("Розклад уроку додано успішно.")
+            try:
+                subject = Subject.objects.get(name=subject_name)
+                class_name = input("Введіть назву класу: ")
+                class_obj = Class.objects.get(name=class_name)
+                lesson = Lesson(teacher=teacher, subject=subject, class_obj=class_obj, day=day, time=time)
+                lesson.save()
+                print("Розклад уроку додано успішно.")
+            except Subject.DoesNotExist:
+                print(f"Предмет {subject_name} не знайдений.")
+            except Class.DoesNotExist:
+                print(f"Клас {class_name} не знайдений.")
         except Teacher.DoesNotExist:
             print(f"Вчитель {teacher_name} не знайдений.")
-        except Subject.DoesNotExist:
-            print(f"Предмет {subject_name} не знайдений.")
-        except Class.DoesNotExist:
-            print(f"Клас {class_name} не знайдений.")
-
-    def add_student_schedule(self, student_name):
-        subject_name = input("Введіть назву предмету: ")
-        day = input("Введіть день (наприклад, Понеділок): ")
-
-        # Додайте перевірку на коректність дня тижня
-        valid_days = ["Понеділок", "Вівторок", "Середа", "Четвер", "П'ятниця"]
-        if day not in valid_days:
-            print("Неправильний день тижня. Введіть коректний день (Понеділок до П'ятниці).")
-            return
-
-        time = input("Введіть час (наприклад, 10:00): ")
-
+    def add_teacher_schedule(self, teacher_name):
         try:
-            student = Student.objects.get(name=student_name)
-            subject = Subject.objects.get(name=subject_name)
+            teacher = Teacher.objects.get(name=teacher_name)
+            self.display_teacher_schedule(teacher_name)
+            subject_name = input("Введіть назву предмету: ")
+            day = input("Введіть день (наприклад, Понеділок): ")
+            time = input("Введіть час (наприклад, 10:00): ")
 
-            lesson = Lesson(student=student, subject=subject, day=day, time=time)
-            lesson.save()
-            print("Розклад уроку додано успішно.")
-        except Student.DoesNotExist:
-            print(f"Учень {student_name} не знайдений.")
-        except Subject.DoesNotExist:
-            print(f"Предмет {subject_name} не знайдений.")
+            try:
+                subject = Subject.objects.get(name=subject_name)
+                class_name = input("Введіть назву класу: ")
+                class_obj = Class.objects.get(name=class_name)
+                lesson = Lesson(teacher=teacher, subject=subject, class_obj=class_obj, day=day, time=time)
+                lesson.save()
+                print("Розклад уроку додано успішно.")
+            except Subject.DoesNotExist:
+                print(f"Предмет {subject_name} не знайдений.")
+            except Class.DoesNotExist:
+                print(f"Клас {class_name} не знайдений.")
+        except Teacher.DoesNotExist:
+            print(f"Вчитель {teacher_name} не знайдений.")
 
     def display_main_menu(self):
         print("\nГоловне меню:")
@@ -147,6 +144,7 @@ class SchoolSchedule:
         print("12. Додати розклад для учня")
         print("13. Вихід")
 
+    
     def main_menu(self):
         while True:
             self.display_main_menu()
@@ -193,4 +191,7 @@ class SchoolSchedule:
 
 if __name__ == "__main__":
     school_schedule = SchoolSchedule()
-    school_schedule.main_menu()
+    if hasattr(school_schedule, 'main_menu') and callable(getattr(school_schedule, 'main_menu')):
+        school_schedule.main_menu()
+    else:
+        print("Об'єкт SchoolSchedule не має методу main_menu.")
