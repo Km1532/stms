@@ -15,10 +15,13 @@ class Student(models.Model):
     class_name = models.ForeignKey(Class, on_delete=models.CASCADE)
 
 class Lesson(models.Model):
-    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
-    day = models.CharField(max_length=255) 
-    time = models.CharField(max_length=255)
+    class_obj = models.ForeignKey(Class, on_delete=models.CASCADE)
+    day = models.CharField(max_length=20)
+    time = models.CharField(max_length=10)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, null=True, blank=True)
+    grade = models.IntegerField(null=True, blank=True)
 
     def __str__(self):
-        return f'{self.subject.name} - {self.student.name} ({self.day}, {self.time})'
+        return f"{self.subject.name} - {self.teacher.name} - {self.class_obj.name}"
