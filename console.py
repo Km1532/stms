@@ -1,25 +1,47 @@
 # -*- coding: utf-8 -*-
+
 import os
 from django.core.wsgi import get_wsgi_application
+
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'school_schedule_project.settings')
 application = get_wsgi_application()
 from school_schedule_app.models import Subject, Teacher, Class, Student, Lesson
+
 class SchoolSchedule:
     def display_subjects(self):
         subjects = Subject.objects.all()
         print("Предмети:")
         for subject in subjects:
             print(f"- {subject.name}")
+
     def display_teachers(self):
         teachers = Teacher.objects.all()
         print("\nВчителі:")
         for teacher in teachers:
             print(f"- {teacher.name} ({teacher.subject.name})")
+
     def display_classes(self):
         classes = Class.objects.all()
         print("\nКласи:")
         for class_obj in classes:
             print(f"- {class_obj.name}")
+
+    def display_students(self):
+        students = Student.objects.all()
+        print("\nУчні:")
+        for student in students:
+            print(f"- {student.name} (клас {student.class_name.name})")
+
+    def display_student_schedule(self, student_name):
+        try:
+            student = Student.objects.get(name=student_name)
+            lessons = Lesson.objects.filter(student=student)
+            print(f"\nРозклад уроків для учня {student_name} (клас {student.class_name.name}):")
+            for lesson in lessons:
+                print(f"- {lesson.subject.name} ({lesson.day}, {lesson.time}, вчитель: {lesson.teacher.name})")
+        except Student.DoesNotExist:
+            print(f"Учень {student_name} не знайдений.")
+
     def add_student_schedule(self, student_name):
         try:
             student = Student.objects.get(name=student_name)
@@ -27,9 +49,11 @@ class SchoolSchedule:
             subject_name = input("Введіть назву предмету: ")
             day = input("Введіть день (наприклад, Понеділок): ")
             time = input("Введіть час (наприклад, 10:00): ")
+
             self._add_student_schedule_to_database(student, subject_name, day, time)
         except Student.DoesNotExist:
             print(f"Учень {student_name} не знайдений.")
+
     def _add_student_schedule_to_database(self, student, subject_name, day, time):
         try:
             subjects = Subject.objects.filter(name=subject_name)
@@ -44,14 +68,26 @@ class SchoolSchedule:
                 print(f"Предмет {subject_name} не знайдений.")
         except Teacher.DoesNotExist:
             print(f"Вчитель {teacher_name} не знайдений.")
+
     def add_subject(self, name):
         subject = Subject(name=name)
         subject.save()
         print(f"Предмет {name} додано успішно.")
+
+    def add_teacher(self, name, subject_name):
+        try:
+            subject = Subject.objects.get(name=subject_name)
+            teacher = Teacher(name=name, subject=subject)
+            teacher.save()
+            print(f"Вчитель {name} додано успішно.")
+        except Subject.DoesNotExist:
+            print(f"Предмет {subject_name} не знайдений.")
+
     def add_class(self, name):
         class_obj = Class(name=name)
         class_obj.save()
         print(f"Клас {name} додано успішно.")
+
     def add_student(self, name, class_name):
         try:
             class_obj = Class.objects.get(name=class_name)
@@ -60,6 +96,7 @@ class SchoolSchedule:
             print(f"Учня {name} додано успішно.")
         except Class.DoesNotExist:
             print(f"Клас {class_name} не знайдений.")
+
     def display_teacher_schedule(self, teacher_name):
         try:
             teacher = Teacher.objects.get(name=teacher_name)
@@ -69,6 +106,7 @@ class SchoolSchedule:
                 print(f"- {lesson}")
         except Teacher.DoesNotExist:
             print(f"Вчитель {teacher_name} не знайдений.")
+
     def add_teacher_schedule(self, teacher_name):
         try:
             teacher = Teacher.objects.get(name=teacher_name)
@@ -76,6 +114,7 @@ class SchoolSchedule:
             subject_name = input("Введіть назву предмету: ")
             day = input("Введіть день (наприклад, Понеділок): ")
             time = input("Введіть час (наприклад, 10:00): ")
+
             try:
                 subject = Subject.objects.get(name=subject_name)
                 class_name = input("Введіть назву класу: ")
@@ -140,7 +179,7 @@ class SchoolSchedule:
             student = Student.objects.get(name=student_name)
             lessons = Lesson.objects.filter(student=student)
 
-            print(f"\nОцінки для учня {student_name} (клас {student.class_name}):")
+            print(f"\nОцінки для учня {student_name} (клас {student.class_name.name}):")
             for lesson in lessons:
                 print(f"{lesson.subject.name}: {lesson.grade if lesson.grade is not None else 'Оцінка не виставлена'}")
         except Student.DoesNotExist:
